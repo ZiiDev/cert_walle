@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SGX-WALLET.  If not, see <http://www.gnu.org/licenses/>.
  changes
+ Welcome
  */
 #include "enclave_u.h"
 #include "sgx_urts.h"
