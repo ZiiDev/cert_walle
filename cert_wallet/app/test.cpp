@@ -39,7 +39,7 @@ int test(sgx_enclave_id_t eid) {
     const char new_master_password[MAX_ITEM_SIZE] = "This is the new master-password";
     const char title[MAX_ITEM_SIZE] = "New Item Title";
     const char username[MAX_ITEM_SIZE] = "asonnino";
-    const char password[MAX_ITEM_SIZE] = "test1234";
+    const char certificate[MAX_ITEM_SIZE] = "test1234";
 
     
     warning_print("Only 'happy path' is tested.");
@@ -64,7 +64,7 @@ int test(sgx_enclave_id_t eid) {
     item_t* new_item = (item_t*)malloc(sizeof(item_t));
     strcpy(new_item->title, title); 
     strcpy(new_item->username, username); 
-    strcpy(new_item->password, password);
+    strcpy(new_item->certificate, certificate);
     for (int i = 0; i < 2; ++i) {
         ecall_status = ecall_add_item(eid, &ret, master_password, new_item, sizeof(item_t));
         if (ecall_status != SGX_SUCCESS || is_error(ret)) {

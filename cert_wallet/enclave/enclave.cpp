@@ -316,7 +316,7 @@ int ecall_add_item(const char* master_password, const item_t* item, const size_t
 	// 4. check input length
 	if (strlen(item->title)+1 > MAX_ITEM_SIZE ||
 		strlen(item->username)+1 > MAX_ITEM_SIZE ||
-		strlen(item->password)+1 > MAX_ITEM_SIZE
+		strlen(item->certificate)+1 > MAX_ITEM_SIZE
 	) {
 		free(wallet);
 		return ERR_ITEM_TOO_LONG;

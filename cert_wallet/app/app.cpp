@@ -263,7 +263,7 @@ int main(int argc, char** argv) {
             item_t* new_item = (item_t*)malloc(sizeof(item_t));
             strcpy(new_item->title, x_value); 
             strcpy(new_item->username, y_value); 
-            strcpy(new_item->password, z_value);
+            strcpy(new_item->certificate, z_value);
             ecall_status = ecall_add_item(eid, &ret, p_value, new_item, sizeof(item_t));
             if (ecall_status != SGX_SUCCESS || is_error(ret)) {
                 error_print("Fail to add new item to wallet.");
