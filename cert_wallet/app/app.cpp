@@ -113,12 +113,12 @@ int main(int argc, char** argv) {
     ////////////////////////////////////////////////
     // read input arguments 
     ////////////////////////////////////////////////
-    const char* options = "hvtn:p:c:sax:y:z:r:";
+    const char* options = "hvtn:p:c:saex:y:z:r:";
     opterr=0; // prevent 'getopt' from printing err messages
     char err_message[100];
     int opt, stop=0;
-    int h_flag=0, v_flag=0, s_flag=0, a_flag=0, t_flag=0;
-    char * n_value=NULL, *p_value=NULL, *c_value=NULL, *x_value=NULL, *y_value=NULL, *z_value=NULL, *r_value=NULL;
+    int h_flag=0, v_flag=0, s_flag=0, a_flag=0, t_flag=0, e_flag=0;
+    char * n_value=NULL, *p_value=NULL, *c_value=NULL, *x_value=NULL, *y_value=NULL, *z_value=NULL, *r_value=NULL, *e_value=NULL;
   
     // read user input
     while ((opt = getopt(argc, argv, options)) != -1) {
@@ -141,6 +141,12 @@ int main(int argc, char** argv) {
             // create new wallet
             case 'n':
                 n_value = optarg;
+                break;
+
+            // encrypt data
+            case 'e':
+                e_flag =1;
+                e_value = optarg;
                 break;
 
             // master-password
@@ -180,7 +186,7 @@ int main(int argc, char** argv) {
             // exceptions
             case '?':
                 if (optopt == 'n' || optopt == 'p' || optopt == 'c' || optopt == 'r' ||
-                    optopt == 'x' || optopt == 'y' || optopt == 'z'
+                    optopt == 'x' || optopt == 'y' || optopt == 'z' || optopt == 'e'
                 ) {
                     sprintf(err_message, "Option -%c requires an argument.", optopt);
                 }
@@ -273,6 +279,22 @@ int main(int argc, char** argv) {
             }
             free(new_item);
         }
+
+        // encrypt data
+        else if (p_value!=NULL && e_flag && x_value!=NULL && y_value!=NULL && e_value!=NULL) {
+            item_t* new_item1 = (item_t*)malloc(sizeof(item_t));
+            strcpy(new_item1->title, x_value); 
+            strcpy(new_item1->username, y_value); 
+            strcpy(new_item1->certificate, e_value);
+            ecall_status = ecall_encrypt_item(eid, &ret, p_value, new_item1, sizeof(item_t));
+            if (ecall_status != SGX_SUCCESS || is_error(ret)) {
+                error_print("Fail to add new item to wallet.");
+            }
+            else {
+                info_print("Item successfully added to the wallet.");
+            }
+            free(new_item);
+        }        
 
         // remove item
         else if (p_value!=NULL && r_value!=NULL) {

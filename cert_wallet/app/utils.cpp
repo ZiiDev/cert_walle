@@ -64,7 +64,7 @@ void print_wallet(const wallet_t* wallet) {
     for (int i = 0; i < wallet->size; ++i) {
         printf("#%d -- %s\n", i, wallet->items[i].title);
         printf("[username:] %s\n", wallet->items[i].username);
-        printf("[password:] %s\n", wallet->items[i].certificate);
+        printf("[certificate:] %s\n", wallet->items[i].certificate);
         printf("\n");
     }
     printf("\n------------------------------------------\n\n");
