@@ -65,9 +65,16 @@ void print_wallet(const wallet_t* wallet) {
         printf("#%d -- %s\n", i, wallet->items[i].title);
         printf("[username:] %s\n", wallet->items[i].username);
         printf("[certificate:] %s\n", wallet->items[i].certificate);
+        
+        printf("[encrypted :] %p\n", wallet->items[i].encrypteee);
         printf("\n");
     }
     printf("\n------------------------------------------\n\n");
+
+}
+
+void print_encr(uint8_t encrypteee){
+    printf("[certificate:] %s\n", encrypteee);
 }
 
 

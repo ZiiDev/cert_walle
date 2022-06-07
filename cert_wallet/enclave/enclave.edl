@@ -36,6 +36,13 @@ enclave {
             [in, string]const char* master_password
         );
 
+/**        public uint8_t sgx_rijndael128GCM_encrypt([in]const uint8_t *key,
+*					[in] uint8_t *tobeEncrypted, [in] uint32_t lenofTObe , // plaintext
+*					[out]uint8_t *buf , [in] uint8_t  *iv, // ciphertext
+*					[in]uint32_t lenofiv, NULL, // iv
+*					0, // aad
+*					[out]sgx_aes_gcm_128bit_tag_t *buf);
+**/       
 
         /**
          * @brief      Provides the wallet content. The sizes/length of 
@@ -53,6 +60,7 @@ enclave {
             [out, size=wallet_size] wallet_t* wallet,
             size_t wallet_size
         );
+        
 
 
         /**
@@ -86,6 +94,11 @@ enclave {
             size_t item_size
         );
 
+        public int ecall_encrypt_item(
+            [in, string]const char* master_password, 
+            [in, size=item_size] item_t* item,
+            size_t item_size, int sizee
+        );
 
         /**
          * @brief      Removes an item from the wallet. The sizes/length of 
@@ -132,6 +145,11 @@ enclave {
             [in, size=sealed_size]const uint8_t* sealed_data, 
             size_t sealed_size
         );
+        /**int ocall_save_encrypted_wallet(
+            [in, size=sealed_size]const uint8_t* sealed_data, 
+            size_t sealed_size
+        );
+        **/
 
 
         /**

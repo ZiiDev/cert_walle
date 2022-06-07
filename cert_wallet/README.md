@@ -70,3 +70,75 @@ Any help is welcome through PRs!
 [The GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 
+
+				//(item->encrypted) = (char*)encrypteee;
+					// 7. save wallet
+				
+				
+				
+				/*ocall_status = ocall_save_encrypted_wallet(&ocall_ret, encrypteee, sizeof(encrypteee));
+				free(sealed_data);
+				if (ocall_ret != 0 || ocall_status != SGX_SUCCESS) {
+					return ERR_CANNOT_SAVE_WALLET;
+				}
+				DEBUG_PRINT("[OK] Wallet successfully saved.");
+				*/
+				
+
+			   //const sample_aes_gcm_128bit_key_t (*key)[16];
+    			//key = &alice;
+				/*int ressult;
+				for(int b=0; wallet->items[b].certificate!='\0'; ++b){
+					ressult =( ressult * 10) + (wallet->items[b].certificate) - '0';
+				}
+				uint8_t enckey=(uint8_t)ressult; 
+
+
+
+					   			   //const sgx_aes_gcm_128bit_key_t alice = (atoi){wallet->items[i].certificate};
+
+			   //uint8_t iv[12];
+				//const sgx_aes_gcm_128bit_key_t (*key)[16];
+				//key = &alice;
+				//uint8_t *as = (uint8_t *)&item->certificate;
+				// lenofatoi = sizeof(item->certificate);
+
+								//gen_iv();
+				//const sample_aes_gcm_128bit_key_t (*key)[16];
+			   //const uint8_t* buf;
+
+				//uint8_t *origMessage = (uint8_t *) decMessageIn;
+				//uint8_t p_dst[lenOut];
+				//sample_status_t ret;
+			   //int iv = 12;
+			   //const uint8_t* key;
+			   //const uint8_t* tobeEncrypted;
+			   //memcpy(&key,wallet->items[i].certificate,sizeof(wallet->items[i].certificate));
+			   //memcpy(&tobeEncrypted,item->certificate,sizeof(item->certificate));
+			   //key=(uint8_t)atoi(wallet->items[i].certificate);
+			   //tobeEncrypted= (uint8_t)atoi(item->certificate);
+			   //strncpy(key, wallet->items[i].certificate, sizeof(wallet->items[i].certificate));
+			   //strncpy(tobeEncrypted, item->certificate,sizeof(item->certificate));
+
+
+			   */
+			   /*const sgx_aes_gcm_128bit_key_t alice = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf };
+
+				int ress;
+				for(int a=0; item->certificate[a]!='\0'; ++a){
+					ress =ress * 10 + item->certificate[a] - '0';
+				}
+				uint8_t tobeEncrypted = (uint8_t)ress;
+				uint8_t buf;
+				uint32_t lenofTObe = sizeof(tobeEncrypted);
+				uint32_t lenofiv = sizeof(iv);
+
+			   	if(SGX_SUCCESS != sgx_rijndael128GCM_encrypt(&alice,
+					&tobeEncrypted, lenofTObe, // plaintext
+					&buf, // ciphertext
+					&iv, // iv
+					lenofiv, NULL, 0, // aad
+					(sgx_aes_gcm_128bit_tag_t *) (buf) // mac
+					))
+			   break;
+			   */

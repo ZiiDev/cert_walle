@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SGX-WALLET.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <stdint.h>
 #ifndef WALLET_H_
 #define WALLET_H_
 
@@ -36,6 +36,8 @@ struct Item {
 	char  title[MAX_ITEM_SIZE];
 	char  username[MAX_ITEM_SIZE];
 	char  certificate[MAX_ITEM_SIZE];
+	unsigned char encrypted[1000];
+	uint8_t *encrypteee;
 };
 typedef struct Item item_t;
 
@@ -44,9 +46,9 @@ struct Wallet {
 	item_t items[MAX_ITEMS];
 	size_t size;
 	char master_password[MAX_ITEM_SIZE];
+	//char encrypted[MAX_ITEM_SIZE];
 };
 typedef struct Wallet wallet_t;
-
 
 
 #endif // WALLET_H_

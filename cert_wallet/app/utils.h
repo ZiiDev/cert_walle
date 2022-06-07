@@ -92,7 +92,7 @@ void show_help();
  */
 void show_version();
 
-
+//void print_encr(uint8_t encrypteee);
 #endif // UTIL_H_
 
 

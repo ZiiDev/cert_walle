@@ -27,6 +27,8 @@
 #define VERSION "0.0.1"
 #define ENCLAVE_FILE "enclave.signed.so"
 #define WALLET_FILE "wallet.seal"
+#define ENC_File "enc.txt"
+
 
 
 #endif // APP_H_

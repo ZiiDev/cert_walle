@@ -60,7 +60,15 @@ int ocall_save_wallet(const uint8_t* sealed_data, const size_t sealed_size) {
     file.close();
     return 0;
 }
-
+/*
+int ocall_save_encrypted_wallet(wallet_t wallet, wallet_t wallet_size) {
+    ofstream file(ENC_File, ios::out | ios::binary);
+    if (file.fail()) {return 1;}
+    file.write((char*)wallet->item[0].encrypted, sizeof(wallet->item[0].encrypted));
+    file.close();
+    return 0;
+}
+*/
 /**
  * @brief      Load sealed data from file The sizes/length of 
  *             pointers need to be specified, otherwise SGX will
@@ -85,8 +93,6 @@ int ocall_is_wallet(void) {
     file.close();
     return 1;
 }
-
-
 
 /***************************************************
  * main
@@ -146,7 +152,7 @@ int main(int argc, char** argv) {
             // encrypt data
             case 'e':
                 e_flag =1;
-                e_value = optarg;
+                
                 break;
 
             // master-password
@@ -176,6 +182,7 @@ int main(int argc, char** argv) {
                 break;
             case 'z': // item's password
                 z_value = optarg;
+                e_value =optarg;
                 break;
 
             // remove item
@@ -286,14 +293,15 @@ int main(int argc, char** argv) {
             strcpy(new_item1->title, x_value); 
             strcpy(new_item1->username, y_value); 
             strcpy(new_item1->certificate, e_value);
-            ecall_status = ecall_encrypt_item(eid, &ret, p_value, new_item1, sizeof(item_t));
+            uint32_t sizee = sizeof(e_value);
+            ecall_status = ecall_encrypt_item(eid, &ret, p_value, new_item1, sizeof(item_t),sizee);
             if (ecall_status != SGX_SUCCESS || is_error(ret)) {
                 error_print("Fail to add new item to wallet.");
             }
             else {
                 info_print("Item successfully added to the wallet.");
             }
-            free(new_item);
+            free(new_item1);
         }        
 
         // remove item

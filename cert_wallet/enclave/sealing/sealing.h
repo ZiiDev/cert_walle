@@ -22,6 +22,10 @@
 #include "sgx_trts.h"
 #include "sgx_tseal.h"
 
+//#include "aes128gcm.h"
+#include "sgx_tcrypto.h"
+#include "sgx_trts.h"
+
 #include "wallet.h"
 
 

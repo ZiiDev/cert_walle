@@ -20,6 +20,10 @@
 #include "sgx_trts.h"
 #include "sgx_tseal.h"
 
+//#include "aes128gcm.h"
+#include "sgx_tcrypto.h"
+//#include "libsgx_tcrypto.a"
+
 #include "wallet.h"
 #include "sealing.h"
 
@@ -32,8 +36,18 @@
 sgx_status_t seal_wallet(const wallet_t* wallet, sgx_sealed_data_t* sealed_data, size_t sealed_size) {
     return sgx_seal_data(0, NULL, sizeof(wallet_t), (uint8_t*)wallet, sealed_size, sealed_data);
 }
+/*sgx_status_t sgx_rijndael128GCM_encrypt(const uint8_t *key,
+                                        uint8_t *tobeEncrypted,
+                                        uint32_t lenofTObe,
+                                        uint8_t *buf, // ciphertext
+					                    uint8_t *iv, // iv
+					                    uint32_t lenofiv , 0, 0, // aad
+					                    sgx_aes_gcm_128bit_tag_t *buf){
 
+                                            return char* buf;
+                                        }
 
+*/
 /**
  * @brief      Unseal the sealed_data given into c-string
  *
