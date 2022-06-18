@@ -33,7 +33,7 @@ int test(sgx_enclave_id_t eid) {
     // declare return variables
 	sgx_status_t ecall_status;
 	int ret;
-
+    /*
     // test inputs
 	const char master_password[MAX_ITEM_SIZE] = "This is the master-password";
     const char new_master_password[MAX_ITEM_SIZE] = "This is the new master-password";
@@ -113,10 +113,10 @@ int test(sgx_enclave_id_t eid) {
         return 1;
     }
     info_print("[TEST] Wallet successfully retrieved.");
-    print_wallet(wallet);
+    //print_wallet(wallet);
     free(wallet);
 
-
+*/
     return 0;
 }
 

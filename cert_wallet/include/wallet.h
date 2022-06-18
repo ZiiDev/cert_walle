@@ -25,7 +25,7 @@
  * Defines
  ***************************************************/
 #define MAX_ITEMS 100
-#define MAX_ITEM_SIZE 300
+#define MAX_ITEM_SIZE 10
 
 
 /***************************************************
@@ -36,8 +36,10 @@ struct Item {
 	char  title[MAX_ITEM_SIZE];
 	char  username[MAX_ITEM_SIZE];
 	char  certificate[MAX_ITEM_SIZE];
-	unsigned char encrypted[1000];
+	char encrypted[MAX_ITEM_SIZE];
 	uint8_t *encrypteee;
+	char decrypted[MAX_ITEM_SIZE];
+	uint8_t *decrypteee;
 };
 typedef struct Item item_t;
 

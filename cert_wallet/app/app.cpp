@@ -61,10 +61,11 @@ int ocall_save_wallet(const uint8_t* sealed_data, const size_t sealed_size) {
     return 0;
 }
 /*
-int ocall_save_encrypted_wallet(wallet_t wallet, wallet_t wallet_size) {
-    ofstream file(ENC_File, ios::out | ios::binary);
-    if (file.fail()) {return 1;}
-    file.write((char*)wallet->item[0].encrypted, sizeof(wallet->item[0].encrypted));
+int ocall_save_dec_wallet(wallet_t wallet, wallet_t wallet_size) {
+
+
+    ofstream file(ENC_File, ios::in | ios::binary);
+    file.write(wallet_t wallet, wallet_t wallet_size);
     file.close();
     return 0;
 }
@@ -266,7 +267,7 @@ int main(int argc, char** argv) {
             }
             else {
                 info_print("Wallet successfully retrieved.");
-                print_wallet(wallet);
+                print_wallet(wallet,sizeof(wallet_t));
             }
             free(wallet);
         }
@@ -289,18 +290,24 @@ int main(int argc, char** argv) {
 
         // encrypt data
         else if (p_value!=NULL && e_flag && x_value!=NULL && y_value!=NULL && e_value!=NULL) {
+            
             item_t* new_item1 = (item_t*)malloc(sizeof(item_t));
+            
             strcpy(new_item1->title, x_value); 
             strcpy(new_item1->username, y_value); 
             strcpy(new_item1->certificate, e_value);
-            uint32_t sizee = sizeof(e_value);
+            uint32_t sizee = sizeof(e_value)/sizeof(new_item1->certificate[0]);
+
             ecall_status = ecall_encrypt_item(eid, &ret, p_value, new_item1, sizeof(item_t),sizee);
             if (ecall_status != SGX_SUCCESS || is_error(ret)) {
                 error_print("Fail to add new item to wallet.");
             }
             else {
                 info_print("Item successfully added to the wallet.");
+                //print_encr(wallet);
             }
+
+
             free(new_item1);
         }        
 

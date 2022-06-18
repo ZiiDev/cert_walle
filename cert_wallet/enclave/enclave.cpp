@@ -18,6 +18,7 @@
  */
 #include "enclave_t.h"
 #include "string.h"
+#include "stdint.h"
 
 //#include "aes128gcm.h"
 #include "sgx_tcrypto.h"
@@ -333,9 +334,80 @@ int ecall_encrypt_item(const char* master_password, item_t* item, const size_t i
 	for(int i=0; i<wallet_size; i++){
 		if(strcmp(wallet->items[i].title, item->title) == 0 && 
 		   strcmp(wallet->items[i].username, item->username) == 0 ){
-			   uint8_t *bout=(uint8_t*)malloc(128);
+			   	sgx_aes_gcm_128bit_tag_t mac;
+			    const sgx_aes_gcm_128bit_key_t aes_key= { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf };
+
+				uint8_t iv[12];
+			   	memset(iv,0,12);
+				   
+			   	uint32_t encMessageLen = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE  + sizee;
+			    //const uint8_t* plaintext = 12; 
+			   	uint8_t* plaintext = (uint8_t *)malloc(sizee);
+				memcpy(plaintext,item->certificate, sizee * sizeof(uint8_t));
+			   	uint8_t* bout = (uint8_t*)malloc(encMessageLen+1);
+				memset(bout,0,encMessageLen+1);	
+				uint32_t boutlen = *(&bout +1)-bout;
+				uint32_t aes128gcm_ciphertext_size = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + sizee;
+			   	if(boutlen < aes128gcm_ciphertext_size)
+					{
+						return 0Xffffffff;
+					}
+				if(sgx_read_rand(bout, SGX_AESGCM_IV_SIZE) != SGX_SUCCESS)
+					{
+						return 0Xffffffff;
+					}
+			   	sgx_status_t res;
+			   	res= sgx_rijndael128GCM_encrypt(&aes_key,
+					plaintext, sizee, // plaintext
+					bout + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE, // ciphertext
+					bout, SGX_AESGCM_IV_SIZE, // iv
+					NULL, 0, // aad
+					(sgx_aes_gcm_128bit_tag_t*) (bout + SGX_AESGCM_IV_SIZE));
+				if (res != SGX_SUCCESS) {
+					//printf("encryption error");
+					free(wallet);
+					return 0Xffffffff;
+				}
+
+				//item->encrypted=(char *) malloc((encMessageLen+1));
+				memcpy(item->encrypted,(char *)bout,encMessageLen*sizeof(uint8_t));
+
+				item->encrypteee = (uint8_t*)malloc(sizeof(bout)/sizeof(uint8_t));
+				memcpy(item->encrypteee,bout,encMessageLen*sizeof(uint8_t));
+				
+
+				uint32_t ciphertextlen = encMessageLen -(SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE);
+				uint32_t encsize= sizeof(bout)/sizeof(uint8_t);
+				uint8_t *plaintext1= (uint8_t*) malloc(sizee * sizeof(uint8_t));
+				memset(plaintext1,0,sizee * sizeof(uint8_t));
+				size_t plainlen = sizeof(plaintext1)/sizeof(uint8_t);
+				sgx_status_t rest;
+
+				rest= sgx_rijndael128GCM_decrypt(&aes_key, bout + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE,
+				ciphertextlen, plaintext1, bout ,SGX_AESGCM_IV_SIZE ,NULL,0,
+				(sgx_aes_gcm_128bit_tag_t*) (bout + SGX_AESGCM_IV_SIZE));
+				if (rest != SGX_SUCCESS) {
+					//printf("encryption error");
+					free(wallet);
+					return ERR_FAIL_UNSEAL;
+				}
+				item->decrypteee = (uint8_t*) malloc((sizee)*sizeof(uint8_t));
+				memcpy(item->decrypteee,plaintext1,sizee*sizeof(uint8_t));
+				//char as = 'M';
+				//item->decrypted = ( char *) malloc((sizee)*sizeof( char));
+				memcpy(item->decrypted,(char*)plaintext1,sizee);
+				//item->decrypted= &as;
+				free(bout);
+				free(plaintext1);
+				//plaintext=NULL;
+				//free(plaintext);
+				//free(buout);
+				
+			   /*
+			   uint32_t encMessageLen = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + sizee;
+			   bout=(uint8_t*)malloc(encMessageLen);
 			   
-			   //item->encrypteee = (uint8_t*)malloc(aesgcm_len);
+			   
 			   uint32_t boutlen = *(&bout +1)-bout;
 			   //uint32_t boutlen = sizeof(item->encrypteee);
 			   uint32_t aes128gcm_ciphertext_size = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + sizee;
@@ -346,7 +418,7 @@ int ecall_encrypt_item(const char* master_password, item_t* item, const size_t i
 			   
 			   	if(sgx_read_rand(bout, SGX_AESGCM_IV_SIZE) != SGX_SUCCESS)
 					{
-						return ERR_FAIL_UNSEAL;
+						return 0Xffffffff;
 					}
 				const sgx_aes_gcm_128bit_key_t aes_key= { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xd, 0xa };
 				uint8_t *plaintext = (uint8_t *)item->certificate;
@@ -360,38 +432,175 @@ int ecall_encrypt_item(const char* master_password, item_t* item, const size_t i
 				if (res != SGX_SUCCESS) {
 					//printf("encryption error");
 					free(wallet);
-					return ERR_FAIL_UNSEAL;
+					return 0Xffffffff;
 				}	
+				item->encrypted=(unsigned char *) malloc((sizee)*sizeof(unsigned char));
+				memcpy(item->encrypted,bout,sizee);
 				item->encrypteee = bout;		
-				//print_encr(bout);
-			   /*
-			   //return ERR_FAIL_SEAL;
-			   uint8_t *plaintext = (uint8_t *)item->certificate;0x7f9276a897c0  0x7f961bda27c0
-			   size_t aesgcm_len =4 + ((((double)sizee)/16))*16 +16;
-			   item->encrypteee = (uint8_t*)malloc(aesgcm_len);
-			   sgx_aes_gcm_128bit_tag_t mac;
-			   const sgx_aes_gcm_128bit_key_t aes_key= { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf };
-			   //sgx_read_rand((unsigned char *) &aes_key, sizeof(sgx_aes_gcm_128bit_key_t));
-			   uint8_t iv[12];
-			   memset(iv,0,12);
-			   ((int*)item->encrypteee)[0]=sizee;
+				*/
+				size_t wallet_size = wallet->size;
+					if (wallet_size >= MAX_ITEMS) {
+						free(wallet);
+						return ERR_WALLET_FULL;
+					}
+				wallet->items[wallet_size] = *item;
+				++wallet->size;
+				DEBUG_PRINT("[OK] Item successfully added.");
+				sealed_data = (uint8_t*)malloc(sealed_size);
+
+				//free(item);
+				sealing_status = seal_wallet(wallet, (sgx_sealed_data_t*)sealed_data, sealed_size);
+				free(wallet);
+				if (sealing_status != SGX_SUCCESS) {
+					free(wallet);
+					free(sealed_data);
+					return ERR_FAIL_SEAL;
+				}
+				DEBUG_PRINT("[OK] Seal wallet.");
+
+
+				// 7. save wallet
+				ocall_status = ocall_save_wallet(&ocall_ret, sealed_data, sealed_size);
+				free(sealed_data);
+				if (ocall_ret != 0 || ocall_status != SGX_SUCCESS) {
+					return ERR_CANNOT_SAVE_WALLET;
+				}
+				DEBUG_PRINT("[OK] Wallet successfully saved.");
+
+
+				// 8. exit enclave
+				DEBUG_PRINT("ITEM SUCCESSFULLY ADDED TO THE WALLET.");
+				return RET_SUCCESS;
+				break;
 			   
-			   sgx_status_t res;
-			   	res= sgx_rijndael128GCM_encrypt(&aes_key, plaintext, sizee, (uint8_t*)item->encrypteee+4,iv,12 ,NULL,0,&mac);
+		}else{
+			return ERR_CANNOT_LOAD_WALLET;
+		}
+	}
+}
+
+int ecall_decrypt_item(const char* master_password, item_t* item, const size_t item_size,const int sizee) {
+
+	//
+	// OVERVIEW:
+	//	1. [ocall] load wallet
+	//	2. unseal wallet
+	//	3. verify master-password
+	//	4. check input length
+	//	5. add item to the wallet
+	//	6. seal wallet
+	//	7. [ocall] save sealed wallet
+	//	8. exit enclave
+	//
+	//
+	sgx_status_t ocall_status, sealing_status;
+	int ocall_ret;
+
+	DEBUG_PRINT("ADDING ITEM TO THE WALLET...");
+
+
+	// 2. load wallet
+	size_t sealed_size = sizeof(sgx_sealed_data_t) + sizeof(wallet_t);
+	uint8_t* sealed_data = (uint8_t*)malloc(sealed_size);
+	ocall_status = ocall_load_wallet(&ocall_ret, sealed_data, sealed_size);
+	if (ocall_ret != 0 || ocall_status != SGX_SUCCESS) {
+		free(sealed_data);
+		return ERR_CANNOT_LOAD_WALLET;
+	}
+	DEBUG_PRINT("[ok] Wallet successfully loaded.");
+
+
+	// 3. unseal wallet
+	uint32_t plaintext_size = sizeof(wallet_t);
+    wallet_t* wallet = (wallet_t*)malloc(plaintext_size);
+    sealing_status = unseal_wallet((sgx_sealed_data_t*)sealed_data, wallet, plaintext_size);
+    free(sealed_data);
+    if (sealing_status != SGX_SUCCESS) {
+    	free(wallet);
+		return ERR_FAIL_UNSEAL;
+    }
+	DEBUG_PRINT("[OK] Unseal wallet.");
+
+
+	// 3. verify master-password
+	if (strcmp(wallet->master_password, master_password) != 0) {
+		free(wallet);
+		return ERR_WRONG_MASTER_PASSWORD;
+	}
+	DEBUG_PRINT("[ok] Master-password successfully verified.");
+
+
+	// 4. check input length
+	if (strlen(item->title)+1 > MAX_ITEM_SIZE ||
+		strlen(item->username)+1 > MAX_ITEM_SIZE ||
+		strlen(item->certificate)+1 > MAX_ITEM_SIZE
+	) {
+		free(wallet);
+		return ERR_ITEM_TOO_LONG;
+    }
+	DEBUG_PRINT("[ok] Item successfully verified.");
+
+
+	size_t wallet_size = wallet->size;
+	for(int i=0; i<wallet_size; i++){
+		if(strcmp(wallet->items[2].title, item->title) == 0 && 
+		   strcmp(wallet->items[2].username, item->username) == 0 ){
+
+			   uint32_t decryptlen = (sizeof(wallet->items[2].encrypteee)/sizeof(uint8_t))-(SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE);
+			   uint8_t *bufout= (uint8_t*)malloc(128);
+			   uint32_t bufoutlen = sizeof(bufout)/sizeof(uint8_t);
+			   //uint32_t bufoutlen = *(&bufout +1)-bufout;
+			   if(bufoutlen< decryptlen){
+				   return 0Xffffffff;
+			   }
+				const sgx_aes_gcm_128bit_key_t aes_key= { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xd, 0xa };
+			    sgx_status_t res;
+				res=sgx_rijndael128GCM_decrypt(&aes_key, wallet->items[2].encrypteee + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE,
+				decryptlen, bufout, wallet->items[2].encrypteee, SGX_AESGCM_IV_SIZE, NULL, 0,
+				(sgx_aes_gcm_128bit_tag_t*) (wallet->items[2].encrypteee + SGX_AESGCM_IV_SIZE));
 				if (res != SGX_SUCCESS) {
 					//printf("encryption error");
 					free(wallet);
-					return ERR_FAIL_UNSEAL;
-				}
-				item->encrypteee= '1';
-				item->username[1]= 'a';
+					return ERR_WALLET_FULL;
+				}	
+				return ERR_WALLET_FULL;
+			   /*
+			   size_t encMessageLen = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + sizee;
+			   bout=(uint8_t*)malloc(encMessageLen);
+			   
+			   //item->encrypteee = (uint8_t*)malloc(aesgcm_len);
+			   uint32_t boutlen = *(&bout +1)-bout;
+			   //uint32_t boutlen = sizeof(item->encrypteee);
+			   uint32_t aes128gcm_ciphertext_size = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + sizee;
+			   if(boutlen < aes128gcm_ciphertext_size)
+					{
+						return 0Xffffffff;
+					}
+			   
+			   	if(sgx_read_rand(bout, SGX_AESGCM_IV_SIZE) != SGX_SUCCESS)
+					{
+						return 0Xffffffff;
+					}
+				const sgx_aes_gcm_128bit_key_t aes_key= { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xd, 0xa };
+				uint8_t *plaintext = (uint8_t *)item->certificate;
+			    sgx_status_t res;
+			   	res=sgx_rijndael128GCM_encrypt(&aes_key,
+					plaintext, sizee, // plaintext
+					bout + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE, // ciphertext
+					bout, SGX_AESGCM_IV_SIZE, // iv
+					NULL, 0, // aad
+					(sgx_aes_gcm_128bit_tag_t*) (bout + SGX_AESGCM_IV_SIZE)); // mac
+				if (res != SGX_SUCCESS) {
+					//printf("encryption error");
+					free(wallet);
+					return 0Xffffffff;
+				}	
+				item->encrypted=(unsigned char *) malloc((encMessageLen+1)*sizeof(unsigned char));
+				memcpy(item->encrypted,bout,encMessageLen+2);
+				item->encrypteee = bout;		
 				*/
 
 
-				//int ab = *(&item->encrypteee +1)-item->encrypteee;
-				//memcpy(item->encrypted,item->encrypteee, ab);
-				//(item->encrypted) =(char *) item->encrypteee;
-				//return ERR_FAIL_SEAL;
 				size_t wallet_size = wallet->size;
 					if (wallet_size >= MAX_ITEMS) {
 						free(wallet);
@@ -431,41 +640,7 @@ int ecall_encrypt_item(const char* master_password, item_t* item, const size_t i
 			return ERR_CANNOT_LOAD_WALLET;
 		}
 	}
-		// 6. seal wallet
-
-	/*
-	DEBUG_PRINT("[OK] Item successfully removed.");
-
-
-
-	// 6. seal wallet
-	sealed_data = (uint8_t*)malloc(sealed_size);
-    sealing_status = seal_wallet(wallet, (sgx_sealed_data_t*)sealed_data, sealed_size);
-    free(wallet);
-    if (sealing_status != SGX_SUCCESS) {
-    	free(wallet);
-		free(sealed_data);
-		return ERR_FAIL_SEAL;
-    }
-	DEBUG_PRINT("[OK] Seal wallet.");
-
-
-	// 7. save wallet
-	ocall_status = ocall_save_wallet(&ocall_ret, sealed_data, sealed_size);
-	free(sealed_data);
-	if (ocall_ret != 0 || ocall_status != SGX_SUCCESS) {
-		return ERR_CANNOT_SAVE_WALLET;
-	}
-	DEBUG_PRINT("[OK] Wallet successfully saved.");
-
-
-	// 8. exit enclave
-	DEBUG_PRINT("ITEM SUCCESSFULLY ADDED TO THE WALLET.");
-	return RET_SUCCESS;
-	*/
 }
-
-
 
 /**
  * @brief      Adds an item to the wallet. The sizes/length of

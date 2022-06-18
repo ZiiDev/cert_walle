@@ -142,3 +142,34 @@ Any help is welcome through PRs!
 					))
 			   break;
 			   */
+
+
+			   				//print_encr(bout);
+			   /*
+			   //return ERR_FAIL_SEAL;
+			   uint8_t *plaintext = (uint8_t *)item->certificate;0x7f9276a897c0  0x7f961bda27c0
+			   size_t aesgcm_len =4 + ((((double)sizee)/16))*16 +16;
+			   item->encrypteee = (uint8_t*)malloc(aesgcm_len);
+			   sgx_aes_gcm_128bit_tag_t mac;
+			   const sgx_aes_gcm_128bit_key_t aes_key= { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf };
+			   //sgx_read_rand((unsigned char *) &aes_key, sizeof(sgx_aes_gcm_128bit_key_t));
+			   uint8_t iv[12];
+			   memset(iv,0,12);
+			   ((int*)item->encrypteee)[0]=sizee;
+			   
+			   sgx_status_t res;
+			   	res= sgx_rijndael128GCM_encrypt(&aes_key, plaintext, sizee, (uint8_t*)item->encrypteee+4,iv,12 ,NULL,0,&mac);
+				if (res != SGX_SUCCESS) {
+					//printf("encryption error");
+					free(wallet);
+					return ERR_FAIL_UNSEAL;
+				}
+				item->encrypteee= '1';
+				item->username[1]= 'a';
+				*/
+
+
+				//int ab = *(&item->encrypteee +1)-item->encrypteee;
+				//memcpy(item->encrypted,item->encrypteee, ab);
+				//(item->encrypted) =(char *) item->encrypteee;
+				//return ERR_FAIL_SEAL;

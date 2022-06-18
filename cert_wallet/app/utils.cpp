@@ -18,12 +18,14 @@
  */
 #include <stdio.h>
 #include <cstring>
+#include <iostream>
+#include <fstream>
 
 #include "utils.h"
 #include "app.h"
 #include "wallet.h"
 #include "enclave.h"
-
+using namespace std;
 
 /**
  * @brief      Prints an info message. 
@@ -56,7 +58,22 @@ void error_print(const char* str) {
  * @brief      Prints the wallet's content.
  *
  */
-void print_wallet(const wallet_t* wallet) {
+void print_wallet( wallet_t* wallet, size_t wallet_size) {
+    ofstream file(ENC_File, ios::out | ios::binary);
+    //char as= 'a';
+    for (int i = 0; i < wallet->size; ++i) {
+    //wallet->items[i].decrypted = &as;
+    //file.write((char *)&wallet->items[i].decrypteee, sizeof(wallet->items[i].decrypteee));
+    //file << endl << endl;
+    file.write((char *)&wallet->items[i].decrypted, sizeof(wallet->items[i].decrypted));
+    file << endl << endl;
+    //file.write((char *)&wallet->items[i].encrypteee, sizeof(wallet->items[i].encrypteee));
+    //file << endl << endl;
+    //file.write((char *)&wallet->items[i].encrypted, sizeof(wallet->items[i].encrypted));
+    //file << endl << endl;
+    }
+    file.close();
+    
     printf("\n-----------------------------------------\n\n");
     printf("%s v%s\n", APP_NAME, VERSION);
     printf("Simple password wallet based on Intel SGX.\n\n");
@@ -65,16 +82,26 @@ void print_wallet(const wallet_t* wallet) {
         printf("#%d -- %s\n", i, wallet->items[i].title);
         printf("[username:] %s\n", wallet->items[i].username);
         printf("[certificate:] %s\n", wallet->items[i].certificate);
-        
-        printf("[encrypted :] %p\n", wallet->items[i].encrypteee);
+        printf("[encrypted :] %hhu\n", wallet->items[i].encrypted);
+        printf("[encrypteee :] %hhu\n", wallet->items[i].encrypteee);
+        printf("[decrypted :] %s\n", wallet->items[i].decrypted);
+        printf("[decrypteee :] %hhu\n", wallet->items[i].decrypteee);
+        /*std::cout<<wallet->items[i].encrypteee<<std::endl;
+        std::cout<<wallet->items[i].encrypted<<std::endl;
+        std::cout<<wallet->items[i].decrypteee<<std::endl;
+        std::cout<<wallet->items[i].decrypted<<std::endl;
+        */
         printf("\n");
     }
     printf("\n------------------------------------------\n\n");
 
 }
 
-void print_encr(uint8_t encrypteee){
-    printf("[certificate:] %s\n", encrypteee);
+void print_encr(const wallet_t* wallet){
+
+        printf("\n-----------------------------------------\n\n");
+    printf("%s v%s\n", APP_NAME, VERSION);
+
 }
 
 
