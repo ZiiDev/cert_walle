@@ -296,7 +296,7 @@ int main(int argc, char** argv) {
             strcpy(new_item1->title, x_value); 
             strcpy(new_item1->username, y_value); 
             strcpy(new_item1->certificate, e_value);
-            uint32_t sizee = sizeof(e_value)/sizeof(new_item1->certificate[0]);
+            uint32_t sizee = sizeof(e_value)/sizeof(new_item1->certificate[0])+1;
 
             ecall_status = ecall_encrypt_item(eid, &ret, p_value, new_item1, sizeof(item_t),sizee);
             if (ecall_status != SGX_SUCCESS || is_error(ret)) {
@@ -307,6 +307,15 @@ int main(int argc, char** argv) {
                 //print_encr(wallet);
             }
 
+            //decrypt item
+            ecall_status = ecall_decrypt_item(eid,&ret,p_value, new_item1,sizeof(item_t),sizee);
+            if (ecall_status != SGX_SUCCESS || is_error(ret)) {
+                error_print("Fail to add new item to wallet.");
+            }
+            else {
+                info_print("Item successfully added to the wallet.");
+                //print_encr(wallet);
+            }
 
             free(new_item1);
         }        

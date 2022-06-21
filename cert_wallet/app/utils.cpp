@@ -62,15 +62,14 @@ void print_wallet( wallet_t* wallet, size_t wallet_size) {
     ofstream file(ENC_File, ios::out | ios::binary);
     //char as= 'a';
     for (int i = 0; i < wallet->size; ++i) {
-    //wallet->items[i].decrypted = &as;
-    //file.write((char *)&wallet->items[i].decrypteee, sizeof(wallet->items[i].decrypteee));
-    //file << endl << endl;
+
+    file.write((char *)&wallet->items[i].encrypted, sizeof(wallet->items[i].encrypted));
+    file << endl << endl;
     file.write((char *)&wallet->items[i].decrypted, sizeof(wallet->items[i].decrypted));
     file << endl << endl;
-    //file.write((char *)&wallet->items[i].encrypteee, sizeof(wallet->items[i].encrypteee));
-    //file << endl << endl;
-    //file.write((char *)&wallet->items[i].encrypted, sizeof(wallet->items[i].encrypted));
-    //file << endl << endl;
+    file.write((char *)&wallet->items[i].encrypteee, sizeof(wallet->items[i].encrypteee));
+    file << endl << endl;
+
     }
     file.close();
     
@@ -82,10 +81,9 @@ void print_wallet( wallet_t* wallet, size_t wallet_size) {
         printf("#%d -- %s\n", i, wallet->items[i].title);
         printf("[username:] %s\n", wallet->items[i].username);
         printf("[certificate:] %s\n", wallet->items[i].certificate);
-        printf("[encrypted :] %hhu\n", wallet->items[i].encrypted);
+        printf("[encrypted :] %s\n", wallet->items[i].encrypted);
         printf("[encrypteee :] %hhu\n", wallet->items[i].encrypteee);
         printf("[decrypted :] %s\n", wallet->items[i].decrypted);
-        printf("[decrypteee :] %hhu\n", wallet->items[i].decrypteee);
         /*std::cout<<wallet->items[i].encrypteee<<std::endl;
         std::cout<<wallet->items[i].encrypted<<std::endl;
         std::cout<<wallet->items[i].decrypteee<<std::endl;

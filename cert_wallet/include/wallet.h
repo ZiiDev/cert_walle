@@ -33,13 +33,12 @@
  ***************************************************/
 // item
 struct Item {
-	char  title[MAX_ITEM_SIZE];
+	char  title[8];
 	char  username[MAX_ITEM_SIZE];
 	char  certificate[MAX_ITEM_SIZE];
-	char encrypted[MAX_ITEM_SIZE];
-	uint8_t *encrypteee;
-	char decrypted[MAX_ITEM_SIZE];
-	uint8_t *decrypteee;
+	char encrypted[8];
+	uint8_t* encrypteee;
+	char decrypted[8];
 };
 typedef struct Item item_t;
 

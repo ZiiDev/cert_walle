@@ -173,3 +173,119 @@ Any help is welcome through PRs!
 				//memcpy(item->encrypted,item->encrypteee, ab);
 				//(item->encrypted) =(char *) item->encrypteee;
 				//return ERR_FAIL_SEAL;
+
+
+
+
+								//free(buout);
+				
+			   /*
+			   uint32_t encMessageLen = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + sizee;
+			   bout=(uint8_t*)malloc(encMessageLen);
+			   
+			   
+			   uint32_t boutlen = *(&bout +1)-bout;
+			   //uint32_t boutlen = sizeof(item->encrypteee);
+			   uint32_t aes128gcm_ciphertext_size = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + sizee;
+			   if(boutlen < aes128gcm_ciphertext_size)
+					{
+						return 0Xffffffff;
+					}
+			   
+			   	if(sgx_read_rand(bout, SGX_AESGCM_IV_SIZE) != SGX_SUCCESS)
+					{
+						return 0Xffffffff;
+					}
+				const sgx_aes_gcm_128bit_key_t aes_key= { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xd, 0xa };
+				uint8_t *plaintext = (uint8_t *)item->certificate;
+			    sgx_status_t res;
+			   	res=sgx_rijndael128GCM_encrypt(&aes_key,
+					plaintext, sizee, // plaintext
+					bout + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE, // ciphertext
+					bout, SGX_AESGCM_IV_SIZE, // iv
+					NULL, 0, // aad
+					(sgx_aes_gcm_128bit_tag_t*) (bout + SGX_AESGCM_IV_SIZE)); // mac
+				if (res != SGX_SUCCESS) {
+					//printf("encryption error");
+					free(wallet);
+					return 0Xffffffff;
+				}	
+				item->encrypted=(unsigned char *) malloc((sizee)*sizeof(unsigned char));
+				memcpy(item->encrypted,bout,sizee);
+				item->encrypteee = bout;		
+				*/
+
+
+
+
+			   	// sgx_aes_gcm_128bit_tag_t mac;
+			    // const sgx_aes_gcm_128bit_key_t aes_key= { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf };
+
+				// uint8_t iv[12];
+			   	// memset(iv,0,12);
+				   
+			   	// uint32_t encMessageLen = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE  + sizee;
+			    // //const uint8_t* plaintext = 12; 
+			   	// uint8_t* plaintext = (uint8_t *)malloc(sizee);
+				// memcpy(plaintext,item->certificate, sizee * sizeof(uint8_t));
+			   	// uint8_t* bout = (uint8_t*)malloc(encMessageLen+1);
+				// memset(bout,0,encMessageLen+1);	
+				// uint32_t boutlen = *(&bout +1)-bout;
+				// uint32_t aes128gcm_ciphertext_size = SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + sizee;
+			   	// if(boutlen < aes128gcm_ciphertext_size)
+				// 	{
+				// 		return 0Xffffffff;
+				// 	}
+				// if(sgx_read_rand(bout, SGX_AESGCM_IV_SIZE) != SGX_SUCCESS)
+				// 	{
+				// 		return 0Xffffffff;
+				// 	}
+			   	// sgx_status_t res;
+			   	// res= sgx_rijndael128GCM_encrypt(&aes_key,
+				// 	plaintext, sizee, // plaintext
+				// 	bout + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE, // ciphertext
+				// 	bout, SGX_AESGCM_IV_SIZE, // iv
+				// 	NULL, 0, // aad
+				// 	(sgx_aes_gcm_128bit_tag_t*) (bout + SGX_AESGCM_IV_SIZE));
+				// if (res != SGX_SUCCESS) {
+				// 	//printf("encryption error");
+				// 	free(wallet);
+				// 	return 0Xffffffff;
+				// }
+
+				// //item->encrypted=(char *) malloc((encMessageLen+1));
+				// memcpy(item->encrypted,(char *)bout,encMessageLen*sizeof(uint8_t));
+
+				// item->encrypteee = (uint8_t*)malloc(sizeof(bout)/sizeof(uint8_t));
+				// memcpy(item->encrypteee,bout,encMessageLen*sizeof(uint8_t));
+				
+
+				// uint32_t ciphertextlen = encMessageLen -(SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE);
+				// uint32_t encsize= sizeof(bout)/sizeof(uint8_t);
+				// uint8_t *plaintext1= (uint8_t*) malloc(sizee * sizeof(uint8_t));
+				// memset(plaintext1,0,sizee * sizeof(uint8_t));
+				// size_t plainlen = sizeof(plaintext1)/sizeof(uint8_t);
+				// sgx_status_t rest;
+
+				// rest= sgx_rijndael128GCM_decrypt(&aes_key, bout + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE,
+				// ciphertextlen, plaintext1, bout ,SGX_AESGCM_IV_SIZE ,NULL,0,
+				// (sgx_aes_gcm_128bit_tag_t*) (bout + SGX_AESGCM_IV_SIZE));
+				// if (rest != SGX_SUCCESS) {
+				// 	//printf("encryption error");
+				// 	free(wallet);
+				// 	return ERR_FAIL_UNSEAL;
+				// }
+				// item->decrypteee = (uint8_t*) malloc((sizee));
+				// memcpy(item->decrypteee,plaintext1,sizee);
+				// //char as = 'M';
+				// //item->decrypted = ( char *) malloc((sizee)*sizeof( char));
+				// //item->decrypted=NULL;
+
+				// memcpy(item->decrypted,(char*)plaintext1,sizee);
+				// item->decrypted[MAX_ITEM_SIZE-1]='\0';
+				// item->decrypted[MAX_ITEM_SIZE-2]='\0';
+				// //item->decrypted= &as;
+				// free(bout);
+				// free(plaintext1);
+				// //plaintext=NULL;
+				// free(plaintext);
