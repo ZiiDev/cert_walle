@@ -20,6 +20,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+//#include <uinstd.h>
 #include <curl/curl.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,9 +31,9 @@
 #include "enclave.h"
 using namespace std;
 struct memory {
-         size_t size;
-         char *memory;
-       };
+    size_t size;
+    char *memory;
+};
 /**
  * @brief      Prints an info message. 
  *
@@ -58,6 +59,7 @@ void warning_print(const char* str) {
 void error_print(const char* str) {
     printf("[ERROR] %s\n", str);
 }
+
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
     size_t realsize = size* nmemb;
@@ -92,16 +94,18 @@ static size_t header_callback(char *contents, size_t size,
  *
  */
 void print_wallet( wallet_t* wallet, size_t wallet_size) {
+
+
 struct memory chunk;
 chunk.memory= NULL;
 chunk.size=0;
-char array[10];
+char grantarray[7];
 CURL *curl;
 CURLcode res;
 curl_global_init(CURL_GLOBAL_ALL);
 curl = curl_easy_init();
 if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
+    curl_easy_setopt(curl, CURLOPT_URL, "http://localhost/hbl/hbl.grant.php");
 
     curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
 
@@ -115,52 +119,60 @@ if(curl) {
     printf("error perform %s\n",curl_easy_strerror(res));
     }
     else{
-    char *etag= NULL;
-    etag = strstr(chunk.memory,"Etag");
-    if(etag){
+    char *granttoken= NULL;
+    
+    granttoken = strstr(chunk.memory,"x-custom-header");
+    
+    if(granttoken){
     //Etag: "3147526947"
     
-    int index= (etag-chunk.memory)+7;
-    for(int i=0; i<10; i++){
-    array[i] = chunk.memory[index +i];
+    int index= (granttoken-chunk.memory)+17;
+    for(int i=0; i<7; i++){
+        if(i==6){
+            grantarray[i]='\0';
+        }else{
+            grantarray[i] = chunk.memory[index + i];
+        }
     }
     //memcpy(array,((etag-chunk.memory)+3);
-    printf("found etag at index:%ld\n",(etag-chunk.memory));
-    printf("array is %s\n", array);
+    printf("found granttoken at index:%ld\n",(granttoken-chunk.memory));
+    printf("grant token from hbl is %s\n", grantarray);
     }
     printf("we got %d bytes\n call back memory is %p\n", (int)chunk.size,chunk.memory );
+    //free(granttoken);
     }
 curl_easy_cleanup(curl);    
 }
 /* we are done with libcurl, so clean it up */
+free(chunk.memory); 
 
 
-
-    
-//char as= 'a';
-string url= "http://localhost/shozib/sign.php?email=";
-url=url + "test22@test.com";
+string url= "http://localhost/cert/sign.php?username=";
+url=url + wallet->items[0].username;
 url= url +"&signature=";
 url=url + wallet->items[0].decrypted;
-url=url + "&grantToken";
-url=url + array;
-printf("string %s\n",url.c_str());
+url=url + "&granttoken=";
+url=url + grantarray;
+printf("\nstring %s\n",url.c_str());
 
 
-struct memory chunk1;
-chunk1.memory= NULL;
-chunk1.size=0;
-char array1[10];
+struct memory chunk2;
+chunk2.memory= NULL;
+chunk2.size=0;
+char granttokennadra[7];
+char tokennadra[7];
+
 CURL *curl2;
 CURLcode res1;
 curl2 = curl_easy_init();
+
 if(curl2) {
     curl_easy_setopt(curl2, CURLOPT_URL, url.c_str());
 
     curl_easy_setopt(curl2, CURLOPT_HEADERFUNCTION, header_callback);
 
     /* pass in custom data to the callback */
-    curl_easy_setopt(curl2, CURLOPT_HEADERDATA, &chunk1);
+    curl_easy_setopt(curl2, CURLOPT_HEADERDATA, &chunk2);
 
     res=curl_easy_perform(curl2);
     
@@ -169,34 +181,53 @@ if(curl2) {
     printf("error perform %s\n",curl_easy_strerror(res1));
     }
     else{
-    char *etag= NULL;
-    etag = strstr(chunk1.memory,"Etag");
-    if(etag){
+        //usleep(1);
+        char *granttoken=NULL;
+        char *token= NULL;
+    granttoken = strstr(chunk2.memory,"x-custom-header");
+    token = strstr(chunk2.memory,"x-custom-token");
+    printf("\n granttoken=%s and token = %s\n",granttoken,token);
+    if(token && granttoken){
+
     //Etag: "3147526947"
-    
-    int index= (etag-chunk1.memory)+7;
-    for(int i=0; i<10; i++){
-    array1[i] = chunk1.memory[index +i];
+    int indextoken= (token-chunk2.memory)+16;
+    int index= (granttoken-chunk2.memory)+17;
+    for(int i=0; i<7; i++){
+        if(i==6){
+            tokennadra[i]='\0';
+            granttokennadra[i]='\0';
+        }else{
+            tokennadra[i] = chunk2.memory[indextoken +i];
+            granttokennadra[i] = chunk2.memory[index +i];
+        }
     }
-    //memcpy(array,((etag-chunk1.memory)+3);
-    printf("found etag at index:%ld\n",(etag-chunk1.memory));
-    printf("array is %s\n", array);
+    //memcpy(array,((etag-chunk2.memory)+3);
+    printf("found granttoken at index:%ld and token at index: %ld\n",(granttoken-chunk2.memory),(token-chunk2.memory));
+    printf("token recieved form nadra is %s and grant token send by nadra is %s\n", tokennadra,granttokennadra);
     }
-    printf("we got %d bytes\n call back memory is %p\n", (int)chunk1.size,chunk1.memory );
+    // free(granttoken);
+    // free(token);
+    printf("we got %d bytes\n call back memory is %p\n", (int)chunk2.size,chunk2.memory );
     }
 
 curl_easy_cleanup(curl2);    
 }
+free(chunk2.memory);
 
+string url3= "http://localhost/hbl/hbl.verify.php?granttoken=";
+url3=url3 + granttokennadra;
+url3= url3 + "&token=";
+url3=url3 + tokennadra;
+printf("string %s\n",url3.c_str());
 struct memory chunk3;
 chunk3.memory= NULL;
 chunk3.size=0;
-char array3[10];
+//char array3[10];
 CURL *curl3;
 CURLcode res3;
 curl3 = curl_easy_init();
 if(curl3) {
-    curl_easy_setopt(curl3, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl3, CURLOPT_URL, url3.c_str());
 
     curl_easy_setopt(curl3, CURLOPT_HEADERFUNCTION, header_callback);
 
@@ -210,40 +241,14 @@ if(curl3) {
     printf("error perform %s\n",curl_easy_strerror(res3));
     }
     else{
-    char *etag= NULL;
-    etag = strstr(chunk3.memory,"Etag");
-    if(etag){
-    //Etag: "3147526947"
-    
-    int index= (etag-chunk3.memory)+7;
-    for(int i=0; i<10; i++){
-    array3[i] = chunk3.memory[index +i];
-    }
-    //memcpy(array,((etag-chunk3.memory)+3);
-    printf("found etag at index:%ld\n",(etag-chunk3.memory));
-    printf("array is %s\n", array);
-    }
     printf("we got %d bytes\n call back memory is %p\n", (int)chunk3.size,chunk3.memory );
     }
 
 curl_easy_cleanup(curl3);    
 }
 
+free(chunk3.memory);
 
-    CURL *curl4;
-    CURLcode res4;
-    std::string readBuffer;
-
-    curl4 = curl_easy_init();
-    if(curl4) {
-        curl_easy_setopt(curl4, CURLOPT_URL, "url.c_str()");
-        curl_easy_setopt(curl4, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl4, CURLOPT_WRITEDATA, &readBuffer);
-        res4 = curl_easy_perform(curl4);
-        curl_easy_cleanup(curl4);
-
-        std::cout << readBuffer << std::endl;
-    }
 curl_global_cleanup();
 
 
@@ -279,9 +284,7 @@ curl_global_cleanup();
         printf("\n");
     }
     printf("\n------------------------------------------\n\n");
-free(chunk1.memory);
-free(chunk.memory);
-free(chunk3.memory);
+
 }
 
 void print_encr(const wallet_t* wallet){
