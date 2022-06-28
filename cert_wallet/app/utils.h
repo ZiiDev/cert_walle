@@ -59,8 +59,8 @@ void error_print(const char* str);
  *
  * @return     -
  */
-void print_wallet( wallet_t* wallet, size_t wallet_size);
-void print_encr(const wallet_t* wallet);
+void print_wallet( wallet_t* wallet, size_t wallet_size, char* ttoken);
+void print_encr(const wallet_t* wallet,size_t wallet_size);
 
 /**
  * @brief      Prints an error message correspondig to the

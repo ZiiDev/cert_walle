@@ -39,6 +39,7 @@ struct Item {
 	char encrypted[8];
 	uint8_t* encrypteee;
 	char decrypted[8];
+	char nadratoken[7];
 };
 typedef struct Item item_t;
 

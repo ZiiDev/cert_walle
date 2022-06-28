@@ -578,6 +578,119 @@ int ecall_decrypt_item(const char* master_password, item_t* item, const size_t i
 
 }
 
+int ecall_token(const char* master_password, item_t* item, const size_t item_size) {
+
+	//
+	// OVERVIEW:
+	//	1. [ocall] load wallet
+	//	2. unseal wallet
+	//	3. verify master-password
+	//	4. check input length
+	//	5. add item to the wallet
+	//	6. seal wallet
+	//	7. [ocall] save sealed wallet
+	//	8. exit enclave
+	//
+	//
+	sgx_status_t ocall_status, sealing_status;
+	int ocall_ret;
+
+	DEBUG_PRINT("ADDING ITEM TO THE WALLET...");
+
+
+	// 2. load wallet
+	size_t sealed_size = sizeof(sgx_sealed_data_t) + sizeof(wallet_t);
+	uint8_t* sealed_data = (uint8_t*)malloc(sealed_size);
+	ocall_status = ocall_load_wallet(&ocall_ret, sealed_data, sealed_size);
+	if (ocall_ret != 0 || ocall_status != SGX_SUCCESS) {
+		free(sealed_data);
+		return ERR_CANNOT_LOAD_WALLET;
+	}
+	DEBUG_PRINT("[ok] Wallet successfully loaded.");
+
+
+	// 3. unseal wallet
+	uint32_t plaintext_size = sizeof(wallet_t);
+    wallet_t* wallet = (wallet_t*)malloc(plaintext_size);
+    sealing_status = unseal_wallet((sgx_sealed_data_t*)sealed_data, wallet, plaintext_size);
+    free(sealed_data);
+    if (sealing_status != SGX_SUCCESS) {
+    	free(wallet);
+		return ERR_FAIL_UNSEAL;
+    }
+	DEBUG_PRINT("[OK] Unseal wallet.");
+
+
+	// 3. verify master-password
+	if (strcmp(wallet->master_password, master_password) != 0) {
+		free(wallet);
+		return ERR_WRONG_MASTER_PASSWORD;
+	}
+	DEBUG_PRINT("[ok] Master-password successfully verified.");
+
+
+	// 4. check input length
+	if (strlen(item->title)+1 > MAX_ITEM_SIZE ||
+		strlen(item->username)+1 > MAX_ITEM_SIZE ||
+		strlen(item->certificate)+1 > MAX_ITEM_SIZE
+	) {
+		free(wallet);
+		return ERR_ITEM_TOO_LONG;
+    }
+	DEBUG_PRINT("[ok] Item successfully verified.");
+	
+	//memset(item->encrypteee, 0,MAX_ITEM_SIZE);
+	
+	for(int i=0; i<7; i++){
+		if(i==6){
+			wallet->items[0].nadratoken[i]='\0';
+		}else{
+		wallet->items[0].nadratoken[i]= item->nadratoken[i];
+		}
+	}		
+
+
+	// 5. add item to the wallet
+	size_t wallet_size = wallet->size;
+	if (wallet_size >= MAX_ITEMS) {
+		free(wallet);
+		return ERR_WALLET_FULL;
+	}
+
+	DEBUG_PRINT("[OK] Item successfully added.");
+
+
+	// 6. seal wallet
+	sealed_data = (uint8_t*)malloc(sealed_size);
+    sealing_status = seal_wallet(wallet, (sgx_sealed_data_t*)sealed_data, sealed_size);
+    free(wallet);
+    if (sealing_status != SGX_SUCCESS) {
+    	free(wallet);
+		free(sealed_data);
+		return ERR_FAIL_SEAL;
+    }
+	DEBUG_PRINT("[OK] Seal wallet.");
+
+
+	// 7. save wallet
+	ocall_status = ocall_save_wallet(&ocall_ret, sealed_data, sealed_size);
+	free(sealed_data);
+	if (ocall_ret != 0 || ocall_status != SGX_SUCCESS) {
+		return ERR_CANNOT_SAVE_WALLET;
+	}
+	DEBUG_PRINT("[OK] Wallet successfully saved.");
+
+
+	// 8. exit enclave
+	DEBUG_PRINT("ITEM SUCCESSFULLY ADDED TO THE WALLET.");
+	return RET_SUCCESS;
+	
+		
+}
+
+
+
+
 /**
  * @brief      Adds an item to the wallet. The sizes/length of
  *             pointers need to be specified, otherwise SGX will
@@ -644,11 +757,17 @@ int ecall_add_item( char* master_password,  item_t* item,  size_t item_size) {
 		return ERR_ITEM_TOO_LONG;
     }
 	DEBUG_PRINT("[ok] Item successfully verified.");
-	memset(item->encrypted, 0,8);
+	
 	//memset(item->encrypteee, 0,MAX_ITEM_SIZE);
-	memset(item->decrypted,0,8);
+	
 
 	item->encrypteee=NULL;
+	item->nadratoken[0]='\0';
+	for(int i=0; i<7; i++){
+		
+		item->decrypted[i]='\0';
+		item->encrypted[i]='\0';
+	}
 
 	// 5. add item to the wallet
 	size_t wallet_size = wallet->size;

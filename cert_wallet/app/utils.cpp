@@ -93,13 +93,15 @@ static size_t header_callback(char *contents, size_t size,
  * @brief      Prints the wallet's content.
  *
  */
-void print_wallet( wallet_t* wallet, size_t wallet_size) {
+void print_wallet( wallet_t* wallet, size_t wallet_size, char* ttoken) {
 
 
 struct memory chunk;
 chunk.memory= NULL;
 chunk.size=0;
 char grantarray[7];
+string url11= "http://localhost/hbl/hbl.grant.php";
+printf("\n %s\n",url11.c_str());
 CURL *curl;
 CURLcode res;
 curl_global_init(CURL_GLOBAL_ALL);
@@ -135,10 +137,10 @@ if(curl) {
         }
     }
     //memcpy(array,((etag-chunk.memory)+3);
-    printf("found granttoken at index:%ld\n",(granttoken-chunk.memory));
-    printf("grant token from hbl is %s\n", grantarray);
+    //printf("found granttoken at index:%ld\n",(granttoken-chunk.memory));
+    printf("\ngrant token from hbl is %s\n", grantarray);
     }
-    printf("we got %d bytes\n call back memory is %p\n", (int)chunk.size,chunk.memory );
+    //printf("we got %d bytes\n call back memory is %p\n", (int)chunk.size,chunk.memory );
     //free(granttoken);
     }
 curl_easy_cleanup(curl);    
@@ -153,7 +155,7 @@ url= url +"&signature=";
 url=url + wallet->items[0].decrypted;
 url=url + "&granttoken=";
 url=url + grantarray;
-printf("\nstring %s\n",url.c_str());
+printf("\n %s\n",url.c_str());
 
 
 struct memory chunk2;
@@ -186,7 +188,7 @@ if(curl2) {
         char *token= NULL;
     granttoken = strstr(chunk2.memory,"x-custom-header");
     token = strstr(chunk2.memory,"x-custom-token");
-    printf("\n granttoken=%s and token = %s\n",granttoken,token);
+    //printf("\n granttoken=%s and token = %s\n",granttoken,token);
     if(token && granttoken){
 
     //Etag: "3147526947"
@@ -202,12 +204,12 @@ if(curl2) {
         }
     }
     //memcpy(array,((etag-chunk2.memory)+3);
-    printf("found granttoken at index:%ld and token at index: %ld\n",(granttoken-chunk2.memory),(token-chunk2.memory));
-    printf("token recieved form nadra is %s and grant token send by nadra is %s\n", tokennadra,granttokennadra);
+    //printf("found granttoken at index:%ld and token at index: %ld\n",(granttoken-chunk2.memory),(token-chunk2.memory));
+    printf("\ntoken recieved form nadra is %s and grant token send by nadra is %s\n", tokennadra,granttokennadra);
     }
     // free(granttoken);
     // free(token);
-    printf("we got %d bytes\n call back memory is %p\n", (int)chunk2.size,chunk2.memory );
+    //printf("we got %d bytes\n call back memory is %p\n", (int)chunk2.size,chunk2.memory );
     }
 
 curl_easy_cleanup(curl2);    
@@ -218,7 +220,7 @@ string url3= "http://localhost/hbl/hbl.verify.php?granttoken=";
 url3=url3 + granttokennadra;
 url3= url3 + "&token=";
 url3=url3 + tokennadra;
-printf("string %s\n",url3.c_str());
+printf("\n %s\n",url3.c_str());
 struct memory chunk3;
 chunk3.memory= NULL;
 chunk3.size=0;
@@ -250,9 +252,22 @@ curl_easy_cleanup(curl3);
 free(chunk3.memory);
 
 curl_global_cleanup();
+    
+        for(int i=0; i<7; i++){
+        if(i==6){
+            ttoken[i]='\0';
+        }else{
+            ttoken[i] = tokennadra[i];
+        }
+    }
+//ttoken = tokennadra;
+}
 
 
-    ofstream file(ENC_File, ios::out | ios::binary);
+
+void print_encr(const wallet_t* wallet,size_t wallet_size){
+
+        ofstream file(ENC_File, ios::out | ios::binary);
     for (int i = 0; i < wallet->size; ++i) {
 
     file.write((char *)&wallet->items[i].encrypted, sizeof(wallet->items[i].encrypted));
@@ -261,7 +276,8 @@ curl_global_cleanup();
     file << endl << endl;
     file.write((char *)&wallet->items[i].encrypteee, sizeof(wallet->items[i].encrypteee));
     file << endl << endl;
-
+    file.write((char *)&wallet->items[i].nadratoken, sizeof(wallet->items[i].nadratoken));
+    file << endl << endl;
     }
     file.close();
     
@@ -273,24 +289,12 @@ curl_global_cleanup();
         printf("#%d -- %s\n", i, wallet->items[i].title);
         printf("[username:] %s\n", wallet->items[i].username);
         printf("[certificate:] %s\n", wallet->items[i].certificate);
-        printf("[encrypted :] %s\n", wallet->items[i].encrypted);
-        printf("[encrypteee :] %hhu\n", wallet->items[i].encrypteee);
+        printf("[encrypted :] %x\n", wallet->items[i].encrypteee);
         printf("[decrypted :] %s\n", wallet->items[i].decrypted);
-        /*std::cout<<wallet->items[i].encrypteee<<std::endl;
-        std::cout<<wallet->items[i].encrypted<<std::endl;
-        std::cout<<wallet->items[i].decrypteee<<std::endl;
-        std::cout<<wallet->items[i].decrypted<<std::endl;
-        */
+        printf("[tokne :] %s\n", wallet->items[i].nadratoken);
         printf("\n");
     }
     printf("\n------------------------------------------\n\n");
-
-}
-
-void print_encr(const wallet_t* wallet){
-
-        printf("\n-----------------------------------------\n\n");
-    printf("%s v%s\n", APP_NAME, VERSION);
 
 }
 

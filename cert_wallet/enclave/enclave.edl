@@ -105,6 +105,11 @@ enclave {
             [in, size=item_size] item_t* item,
             size_t item_size, int sizee
         );
+        public int ecall_token(
+            [in, string]const char* master_password, 
+            [in, size=item_size] item_t* item,
+            size_t item_size
+        );
 
         /**
          * @brief      Removes an item from the wallet. The sizes/length of 

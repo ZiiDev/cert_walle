@@ -24,6 +24,11 @@
 #include <cstring>
 #include <fstream>
 #include <getopt.h>
+#include <curl/curl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <chrono>
+#include <iostream>
 
 #include "app.h"
 #include "utils.h"
@@ -32,8 +37,8 @@
 #include "wallet.h"
 #include "enclave.h"
 #include "test.h"
-
 using namespace std;
+using namespace std::chrono;
 
 
 /***************************************************
@@ -94,6 +99,7 @@ int ocall_is_wallet(void) {
     file.close();
     return 1;
 }
+
 
 /***************************************************
  * main
@@ -267,7 +273,7 @@ int main(int argc, char** argv) {
             }
             else {
                 info_print("Wallet successfully retrieved.");
-                print_wallet(wallet,sizeof(wallet_t));
+                print_encr(wallet,sizeof(wallet_t));
             }
             free(wallet);
         }
@@ -290,35 +296,96 @@ int main(int argc, char** argv) {
 
         // encrypt data
         else if (p_value!=NULL && e_flag && x_value!=NULL && y_value!=NULL && e_value!=NULL) {
-            
-            item_t* new_item1 = (item_t*)malloc(sizeof(item_t));
-            
-            strcpy(new_item1->title, x_value); 
-            strcpy(new_item1->username, y_value); 
-            strcpy(new_item1->certificate, e_value);
-            uint32_t sizee = sizeof(e_value)/sizeof(new_item1->certificate[0])+1;
-
-            ecall_status = ecall_encrypt_item(eid, &ret, p_value, new_item1, sizeof(item_t),sizee);
+            wallet_t* wallet = (wallet_t*)malloc(sizeof(wallet_t));
+            ecall_status = ecall_show_wallet(eid, &ret, p_value, wallet, sizeof(wallet_t));
             if (ecall_status != SGX_SUCCESS || is_error(ret)) {
-                error_print("Fail to add new item to wallet.");
+                error_print("Fail to retrieve wallet.");
             }
             else {
-                info_print("Item successfully added to the wallet.");
-                //print_encr(wallet);
-            }
+                info_print("Wallet successfully retrieved.");
 
-            //decrypt item
-            ecall_status = ecall_decrypt_item(eid,&ret,p_value, new_item1,sizeof(item_t),sizee);
-            if (ecall_status != SGX_SUCCESS || is_error(ret)) {
-                error_print("Fail to add new item to wallet.");
-            }
-            else {
-                info_print("Item successfully added to the wallet.");
-                //print_encr(wallet);
-            }
+                
+                if(wallet->items[0].nadratoken[0]=='\0'){
+                auto start =high_resolution_clock::now();
+                item_t* new_item1 = (item_t*)malloc(sizeof(item_t));
+                strcpy(new_item1->title, x_value); 
+                strcpy(new_item1->username, y_value); 
+                strcpy(new_item1->certificate, e_value);
+                uint32_t sizee = sizeof(e_value)/sizeof(new_item1->certificate[0])+1;
 
-            free(new_item1);
-        }        
+                ecall_status = ecall_encrypt_item(eid, &ret, p_value, new_item1, sizeof(item_t),sizee);
+                if (ecall_status != SGX_SUCCESS || is_error(ret)) {
+                    error_print("Fail to add new item to wallet.");
+                }
+                else {
+                    info_print("Item successfully added to the wallet.");
+                    //print_encr(wallet);
+                }
+
+                //decrypt item
+                ecall_status = ecall_decrypt_item(eid,&ret,p_value, new_item1,sizeof(item_t),sizee);
+                if (ecall_status != SGX_SUCCESS || is_error(ret)) {
+                    error_print("Fail to add new item to wallet.");
+                }
+                else {
+                    info_print("Item successfully added to the wallet.");
+                    //print_encr(wallet);
+                }
+                //wallet_t* wallet = (wallet_t*)realloc(sizeof(wallet_t));
+                ecall_status = ecall_show_wallet(eid, &ret, p_value, wallet, sizeof(wallet_t));
+                if (ecall_status != SGX_SUCCESS || is_error(ret)) {
+                    error_print("Fail to retrieve wallet.");
+                }
+                else {
+                    info_print("Wallet successfully retrieved.");
+                    char token_verfied[7];
+                    print_wallet(wallet,sizeof(wallet_t), token_verfied);
+                    strcpy(new_item1->nadratoken,token_verfied);
+                    // //item_t* new_item1 = (item_t*)malloc(sizeof(item_t));
+                    // for(int i=0; i<7; i++){
+                    //     if(i==6){
+                    //         new_item1->nadratoken[i]='\0';
+                    //     }else{
+                    //     new_item1->nadratoken[i]= token_verfied[i];
+                    //     }
+                    // }
+                    printf("token\n%s\n%s\n",new_item1->nadratoken,token_verfied);
+                    ecall_status = ecall_token(eid, &ret, p_value, new_item1, sizeof(item_t));
+                        if (ecall_status != SGX_SUCCESS || is_error(ret)) {
+                            error_print("Fail to add new item to wallet.");
+                        }
+                        else {
+                            info_print("token successfully added to the wallet.");
+                            print_encr(wallet,sizeof(wallet_t));
+                        }
+                        //free(new_item2);
+                }
+                auto stop = high_resolution_clock::now();
+                auto duration= duration_cast<microseconds>(stop - start);
+                cout<<"Duration for sign up is"<<duration.count()<<endl;
+                free(new_item1);
+            }
+            else{
+                string url3= "localhost/hbl/index.php?token=";
+                url3=url3 + wallet->items[0].nadratoken;
+                printf("string %s\n",url3.c_str());
+                CURL *curl;
+                CURLcode res;
+                curl = curl_easy_init();
+                if(curl) {
+                    curl_easy_setopt(curl, CURLOPT_URL, url3.c_str());
+                    
+                    res = curl_easy_perform(curl);
+                    
+                    curl_easy_cleanup(curl);
+                    printf("migth work");
+                }
+            }
+        }
+        free(wallet);
+
+            
+    }        
 
         // remove item
         else if (p_value!=NULL && r_value!=NULL) {
